@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dart_vlc/dart_vlc.dart';
 import 'package:phantom_player_pc/screen.dart';
+import 'package:phantom_player_pc/top_menus.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -15,18 +16,27 @@ void main() async {
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
+    windowButtonVisibility: false,
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
+    windowManager.setAsFrameless(); // 无边框
+    windowManager.setHasShadow(false); // 是否有阴影
+    // windowManager.setResizable(true); // 是否可缩放
+    // windowManager.setAlwaysOnTop(false); // 是否置顶窗口
     await windowManager.show();
     await windowManager.focus();
   });
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  @override
+  State<StatefulWidget> createState() => _myAppState();
+}
 
-  // This widget is the root of your application.
+class _myAppState extends State<MyApp> {
+  bool isfull = false;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,15 +45,51 @@ class MyApp extends StatelessWidget {
         // 设置窗口的背景颜色
         scaffoldBackgroundColor: Colors.transparent,
       ),
-      home: const Scaffold(
-          body: Column(
-        children: [
-          Expanded(
-              child: Center(
-            child: Screen(),
-          ))
-        ],
-      )),
+      home: Scaffold(
+          body: DragToResizeArea(
+              child: Card(
+                  elevation: 4.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6.0),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/bg1.jpg'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // 导航栏
+                        TopMenus(),
+                        // 桌面区域
+                        Expanded(
+                          child: GestureDetector(
+                            child: const Screen(),
+                            onSecondaryTapDown: (TapDownDetails details) {},
+                            onDoubleTap: () {
+                              windowManager.unmaximize();
+                              setState(() {
+                                isfull = false;
+                              });
+                            },
+                            onSecondaryTap: () {
+                              debugPrint('桌面右键');
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  )))
+
+          // endDrawer: Drawer(
+          //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
+          //   width: 300,
+          //   child: const Settings(),
+          // ),
+          ),
     );
   }
 }

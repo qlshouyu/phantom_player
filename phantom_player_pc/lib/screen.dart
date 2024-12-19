@@ -25,7 +25,7 @@ class _ScreenState extends State<Screen> {
         height: double.infinity,
         volumeThumbColor: Colors.blue,
         volumeActiveColor: Colors.blue,
-        showControls: true,
+        showControls: false,
       ),
     );
   }
